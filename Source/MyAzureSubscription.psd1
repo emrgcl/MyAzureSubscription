@@ -40,7 +40,7 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Enable-RDPForMyIP'
+		'Enable-RDPandSSHForMyIP'
 		'Start-MyVm'
 	)
 	

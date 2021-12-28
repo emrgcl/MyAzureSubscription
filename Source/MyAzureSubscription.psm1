@@ -1,12 +1,12 @@
 
-Function Enable-RDPForMyIP {
+Function Enable-RDPandSSHForMyIP {
 <#
 .SYNOPSIS
     Allows my public ip on all Network Security group on which RDP is enabled.
 .DESCRIPTION
     Allows my public ip on all Network Security group on which RDP is enabled. This is a security best practice in Advisor as well.
 .EXAMPLE
-    PS C:\> Enable-RDPForMyIP -ResourceGroupName 'ContosoAll' -Verbose
+    PS C:\> Enable-RDPandSSHForMyIP -ResourceGroupName 'ContosoAll' -Verbose
     VERBOSE: Script started.
     WARNING: TenantId '72f988bf-86f1-41af-91ab-2d7cd011db47' contains more than one active subscription. First one will be selected for further use. To select another subscription, use Set-AzContext.
     WARNING: Unable to acquire token for tenant '11da1590-20b4-4904-9318-a727a2a59a24'
@@ -28,20 +28,29 @@ Param(
 )
 $ScriptStart = Get-Date
 Write-Verbose "Script started."
+if(-not (Get-AzContext)) {
 try {
+
 Connect-AzAccount -Verbose:$False | Out-Null -ErrorAction Stop
+}
+Catch {
+
+throw "Could not connect to subscription. Error:  $($_.Exception.Message)"
+
+}
+}
+try {
 $Ipinfo  = Invoke-RestMethod http://ipinfo.io/json -Verbose:$False -ErrorAction Stop
 Write-Verbose "Current Public Ip: $($Ipinfo.Ip)"
 }
 Catch {
-
-throw "Could not connect to subscription or could not get local public ip. Error:  $($_.Exception.Message)"
-
+    throw "Could not get public IP adress. Error:  $($_.Exception.Message)"
 }
+
 $NetworkSecurityGroups = Get-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroupName
 Foreach ($NetworkSecurityGroup in $NetworkSecurityGroups) {
     
-    $RDPRules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup | Where-Object {$_.DestinationPortRange -contains 3389} 
+    $RDPRules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup | Where-Object {$_.DestinationPortRange -in @(3389,22)} 
 
  
 
@@ -87,7 +96,17 @@ Function Start-MyVm {
     Begin {
         $Scriptstart = Get-Date
         
-        Connect-AzAccount | Out-Null
+        if(-not (Get-AzContext)) {
+            try {
+            
+            Connect-AzAccount -Verbose:$False | Out-Null -ErrorAction Stop
+            }
+            Catch {
+            
+            throw "Could not connect to subscription. Error:  $($_.Exception.Message)"
+            
+            }
+            }
         if ($WaitForVM)
         {
             Foreach ($VMName in $WaitForVM) {
