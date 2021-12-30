@@ -91,7 +91,8 @@ Function Start-MyVm {
         [string[]]$VM,
         [string[]]$WaitForVM,
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string]$ResourceGroupName
+        [string]$ResourceGroupName,
+        [int32]$WaitForVMSeconds
     )
     Begin {
         $Scriptstart = Get-Date
@@ -125,6 +126,10 @@ Function Start-MyVm {
                     throw $_
                 }
             }
+        }
+        if ($WaitForVMSeconds) {
+
+            Start-Sleep -Seconds $WaitForVMSeconds
         }
 
     }
