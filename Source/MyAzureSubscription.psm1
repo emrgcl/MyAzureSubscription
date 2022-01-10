@@ -50,14 +50,14 @@ Catch {
 $NetworkSecurityGroups = Get-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroupName
 Foreach ($NetworkSecurityGroup in $NetworkSecurityGroups) {
     
-    $RDPRules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup | Where-Object {$_.DestinationPortRange -in @(3389,22)} 
-
+    $RDPRules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup | Where-Object {test-array $_.DestinationPortRange  @(3389,22)} 
+    Write-Verbose "Found $($RDPRules.Count) number of rules for '$($NetworkSecurityGroup.Name)' in '$($NetworkSecurityGroup.ResourceGroupName)' resource to modify."
  
 
     foreach ($RDPRule in $RDPRules) {
 
     Set-AzNetworkSecurityRuleConfig -Direction Inbound -Priority $RDPRule.Priority -SourceAddressPrefix $Ipinfo.ip -NetworkSecurityGroup $NetworkSecurityGroup -Name $RDPRule.Name -Protocol $RDPRule.Protocol -Access $RDPRule.Access -SourcePortRange $RDPRule.SourcePortRange -DestinationPortRange $RDPRule.DestinationPortRange  -DestinationAddressPrefix $rdprule.DestinationAddressPrefix| out-null
-    
+    Write-Verbose "Setting SourceAddressPrefix of '$($RDPRule.Name)' to IP: $($Ipinfo.ip ) " 
     }
 
 Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup | Out-Null
@@ -180,3 +180,24 @@ Function Get-TimeSpan {
     
     ((Get-Date) - $Time).$Span
 }
+Function Test-Array{
+
+    [CmdletBinding()]
+    Param(
+    
+    $ArrayToCheck,
+    $ItemsToCheck
+    
+    )
+    
+    
+    $Result = Foreach ($Item in $ArrayToCheck) {
+    
+    
+    if ($item -in $ItemsToCheck) {$true}
+    
+    }
+    
+    if ($result -contains $true) {$true} else {$false}
+    
+}    
