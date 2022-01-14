@@ -117,7 +117,7 @@ Function Start-MyVm {
                     if ($VMtostart.Statuses.DisplayStatus -notcontains 'VM running')  {
                     Write-Verbose "Starting $VMName before other vms."
                     Start-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName -ErrorAction Stop | Out-Null
-                    Write-Verbose "$VMName Started. Start duration: $(Get-TimeSpan -Time $VMstart -Span TotalSeconds) Seconds."
+                    Write-Verbose "$VMName Started. Start duration: $([Math]::Round((Get-TimeSpan -Time $VMstart -Span TotalSeconds))) Seconds."
                     } else {
                         Write-Verbose "$VMName already started. Skipping."
                     }
@@ -156,7 +156,7 @@ Function Start-MyVm {
     }
     end {
 
-        Write-Verbose "Script ended. Duration: $(Get-TimeSpan -Time $Scriptstart -Span TotalSeconds) Seconds."
+        Write-Verbose "Script ended. Duration: $([Math]::Round((Get-TimeSpan -Time $Scriptstart -Span TotalSeconds))) Seconds."
 }
 }
 Function Get-TimeSpan {
